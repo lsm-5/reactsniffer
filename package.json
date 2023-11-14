@@ -8,7 +8,7 @@
     "reactsniffer": "index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./src/resultSmells.js src/tests/propInInitialState"
   },
   "repository": {
     "type": "git",
