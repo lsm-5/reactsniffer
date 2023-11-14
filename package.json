@@ -8,7 +8,8 @@
     "reactsniffer": "index.js"
   },
   "scripts": {
-    "start": "node ./src/resultSmells.js src/tests/propInInitialState"
+    "start": "node ./src/runSmells.js src/tests/propInInitialState/case#1",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -33,5 +34,8 @@
   "dependencies": {
     "@babel/parser": "^7.15.6",
     "csv-writer": "^1.6.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }
