@@ -27,6 +27,7 @@ module.exports = function(ast) {
 	ast['functions'] = functions;
 	// ast['imports'] = imports;
 	ast['components'] = components;
+	const lucas = ast
 	return ast;
 }
 
@@ -59,7 +60,6 @@ function check_props_initial_state(item, params){
 	return aux;
 }
 
-// function recursive_search(data,match,parent_key,parent_value,component,components,attributes,functions,is_input){
 function recursive_search(item,component,components,functions){
 
 	if (!item){

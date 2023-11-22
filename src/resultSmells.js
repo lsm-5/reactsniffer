@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const filter_react_files = require("./filter_react_files");
 const detect_smells = require("./detect_smells");
+const detect_smells_refactoring = require("./detect_smells_refactoring");
 const compute_thresholds = require("./thresholds");
 
 function detect_smells_rn_react(path) {
@@ -44,14 +45,14 @@ function detect_smells_rn_react(path) {
     out["File URL"] = value["url"];
     out["File"] = value["url"].substring(value["url"].lastIndexOf("/") + 1);
     out["LOC"] = value["number_of_lines"];
-    file_components = detect_smells(value)["components"];
-    out["N_Components"] = file_components.length;
+    const result = detect_smells_refactoring(value);
+    out["N_Components"] = result.components.length;
     out["N_Functions"] = value["functions"].length;
     out["N_Imports"] = value["imports"].length;
 
     all_files.push(out);
 
-    for (const component of file_components) {
+    for (const component of result.components) {
       all_components.push(component);
     }
   }
@@ -151,6 +152,7 @@ function detect_smells_rn_react(path) {
     if (component["propsInitialState"].length > 0) {
       has_smells = true;
       out_component["PIS"] = component["propsInitialState"].length;
+      smells['Props in Initial State'] += component["propsInitialState"].length
     }
 
     if (has_smells) {
