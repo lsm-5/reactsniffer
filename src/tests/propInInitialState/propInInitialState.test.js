@@ -14,6 +14,6 @@ describe("Check props in initial state smell", () => {
       detect_smells_rn_react("src/tests/propInInitialState/case#2")[0][
         "Props in Initial State"
       ]
-    ).toBe(0);
+    ).toBe(1);
   });
 });

@@ -25,6 +25,7 @@ function hasPropsInitialState(item, params) {
 
 function updateComponentPropInInitialState(item, component) {
 	if(item.object && item.object.name && item.object.name === "props"){
+		// type MemberExpression
 		const propsInitialState = {
 			lineStart: item.object.loc.start.line,
 			lineEnd: item.object.loc.end.line,
@@ -32,6 +33,18 @@ function updateComponentPropInInitialState(item, component) {
 		};
 
 		component.propsInitialState.push(propsInitialState);
+	} else if (item?.arguments && Array.isArray(item.arguments)) {
+		item.arguments.forEach(argument => {
+			if (component.properties.includes(argument?.name)) {
+				const propsInitialState = {
+					lineStart: item.loc.start.line,
+					lineEnd: item.loc.end.line,
+					line: readFiles.get_lines(component.file_url, item.loc.start.line, item.loc.end.line),
+				};
+
+				component.propsInitialState.push(propsInitialState);
+			}
+		});
 	}
 }
 
@@ -192,6 +205,8 @@ function recursiveSearch(item, result, component) {
 			} else if (value === 'ImportSpecifier' || value === 'ImportDefaultSpecifier') {
 				updateImportData(item, result);
 			} else if(value === "MemberExpression") {
+				updateComponentPropInInitialState(item, component)
+			} else if(value === "CallExpression"){
 				updateComponentPropInInitialState(item, component)
 			}
 		} else if (key === 'property' && !component.properties.includes(value.name)) {
