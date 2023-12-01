@@ -30,15 +30,31 @@ module.exports = function (dirname) {
       }
     }
 
-    ast["imports"] = [];
-
     //Filtering react files
     if (
       ast.hasOwnProperty("program") &&
       ast["program"].hasOwnProperty("body")
     ) {
       for (var [key, body] of Object.entries(ast["program"]["body"])) {
-        if (body.hasOwnProperty("specifiers")) {
+        if (body?.type === "ImportDeclaration" && (body?.source?.value === "react" || body?.source?.value === "react-native")){
+          ast["url"] = filepath;
+          ast["number_of_lines"] =
+              ast["loc"]["end"]["line"] - ast["loc"]["start"]["line"] + 1;
+        } else if(body?.type === "CallExpression"){
+          for(argument in body.arguments){
+            if(argument.value === "react" || argument.value === "react-native"){
+              ast["url"] = filepath;
+              ast["number_of_lines"] =
+                  ast["loc"]["end"]["line"] - ast["loc"]["start"]["line"] + 1;
+            }
+          }
+        }
+
+
+
+        /*if (body.hasOwnProperty("specifiers")) {
+
+
           for (var [key, specifier] of Object.entries(body["specifiers"])) {
             if (
               specifier["type"] == "ImportDefaultSpecifier" &&
@@ -71,7 +87,7 @@ module.exports = function (dirname) {
                 ast["loc"]["end"]["line"] - ast["loc"]["start"]["line"] + 1;
             }
           }
-        }
+        }*/
       }
       if (ast.hasOwnProperty("url")) {
         react_files.push(ast);

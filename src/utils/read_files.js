@@ -62,3 +62,20 @@ exports.get_lines = function(filename, line_start, line_end) {
 
     return aux_lines;
 }
+
+exports.getStringBetweenIndexes = function (filename, index_start, index_end) {
+    var data = fs.readFileSync(filename, 'utf8');
+
+    // Verifica se os índices são válidos
+    if (index_start < 0 || index_end > data.length || index_start > index_end) {
+        return null;
+    }
+
+    // Obtém a substring com base nos índices
+    const resultString = data.substring(index_start, index_end + 1);
+
+    // Remove espaços em branco do início e do fim da string
+    const trimmedResult = resultString.trim();
+
+    return trimmedResult;
+};

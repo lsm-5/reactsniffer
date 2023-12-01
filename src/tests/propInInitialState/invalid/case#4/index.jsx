@@ -4,7 +4,7 @@ import { useGetEmoji } from "../hooks/useGetEmoji";
 import { Articles } from "../types";
 import { Navigation } from "../components/Navigation";
 
-const styles: { [key: string]: React.CSSProperties } = {
+const styles = {
     container: {
         background: "#FEE2E2",
         height: "100%",
@@ -14,11 +14,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     content: {}
 };
 
-const ArticleContent: React.FC<{
-    article: Articles["articles"]["0"];
-}> = (props) => {
+const ArticleContent: React.FC = (props) => {
     // Step 1. calculate length as we need it to get corresponding emotion
-    const [length] = useState<number>(
+    const [length] = useState(
         props.article.text.length + props.article.title.length
     );
 
@@ -36,7 +34,11 @@ const ArticleContent: React.FC<{
     return (
         <div>
             <div>
-                <h2>{props.article.title}</h2>
+                <h2>
+                    {
+                        props.article.title
+                    }
+                </h2>
                 <div>{props.article.text}</div>
             </div>
             <h3
@@ -50,9 +52,7 @@ const ArticleContent: React.FC<{
 
 const Incorrect: React.FC = () => {
     const articles = useGetArticles();
-    const [currentArticle, setCurrentArticle] = useState<
-        Articles["articles"]["0"] | null
-    >();
+    const [currentArticle, setCurrentArticle] = useState();
     const onClickHandler = useCallback((article) => {
         setCurrentArticle(article);
     }, []);

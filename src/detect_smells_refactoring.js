@@ -23,29 +23,81 @@ function hasPropsInitialState(item, params) {
 	return false;
 }
 
-function updateComponentPropInInitialState(item, component) {
-	if(item.object && item.object.name && item.object.name === "props"){
+function updateComponentPropInInitialState(item, component, parents) {
+	if(item?.object?.name === "props" || item?.property?.name === "props"){
 		// type MemberExpression
-		const propsInitialState = {
-			lineStart: item.object.loc.start.line,
-			lineEnd: item.object.loc.end.line,
-			line: readFiles.get_lines(component.file_url, item.object.loc.start.line, item.object.loc.end.line),
-		};
+		const lines = readFiles.get_lines(component.file_url, item.object.loc.start.line, item.object.loc.end.line);
 
-		component.propsInitialState.push(propsInitialState);
-	} else if (item?.arguments && Array.isArray(item.arguments)) {
+		// checa se não tem uma tag na mesma linha
+		let checkIsJSX = false
+		for (const item of parents.slice().reverse()) {
+			if(item.type === "MemberExpression") continue;
+			if(item.type === "JSXExpressionContainer") checkIsJSX=true;
+			//if(item.type === "ObjectProperty") checkIsJSX=true;
+			else break
+		}
+
+		if(!checkIsJSX){
+			const string = readFiles.getStringBetweenIndexes(component.file_url, item.start, item.end-1)
+			const propsInitialState = {
+				lineStart: item.object.loc.start.line,
+				lineEnd: item.object.loc.end.line,
+				line: lines,
+				smellString: string,
+			};
+
+			component.propsInitialState.push(propsInitialState);
+
+		}
+	}
+	else if (item?.arguments && Array.isArray(item.arguments)) {
 		item.arguments.forEach(argument => {
 			if (component.properties.includes(argument?.name)) {
+				const string = readFiles.getStringBetweenIndexes(component.file_url, item.start, item.end-1)
+
 				const propsInitialState = {
 					lineStart: item.loc.start.line,
 					lineEnd: item.loc.end.line,
 					line: readFiles.get_lines(component.file_url, item.loc.start.line, item.loc.end.line),
+					smellString: string,
 				};
 
 				component.propsInitialState.push(propsInitialState);
 			}
 		});
 	}
+	// todo: precisa ser verificado se precisa de um detector no constructor que não seja um MemberExpression
+	/*else if (item.kind === 'constructor'){
+		const params = item.params.map((param) => param.name);
+		for (const expression of item.body.body) {
+			if (hasPropsInitialState(expression, params)) {
+				const string = readFiles.getStringBetweenIndexes(component.file_url, item.start, item.end-1)
+
+				const propsInitialState = {
+					lineStart: expression.loc.start.line,
+					lineEnd: expression.loc.end.line,
+					line: readFiles.get_lines(component.file_url, expression.loc.start.line, expression.loc.end.line),
+					smellString: string,
+				};
+
+				component.propsInitialState.push(propsInitialState);
+			}
+		}
+	}*/
+	else if (item?.consequent?.name === "props" || item?.alternate?.name === "props"){
+		const string = readFiles.getStringBetweenIndexes(component.file_url, item.start, item.end-1)
+
+		const propsInitialState = {
+			lineStart: item.loc.start.line,
+			lineEnd: item.loc.end.line,
+			line: readFiles.get_lines(component.file_url, item.loc.start.line, item.loc.end.line),
+			smellString: string,
+		};
+
+		component.propsInitialState.push(propsInitialState);
+
+	}
+
 }
 
 function updateComponentData(item, component) {
@@ -78,21 +130,7 @@ function updateFunctionData(item, result, component) {
 
 
 function updateClassMethodData(item, component) {
-	if (item.kind === 'constructor') {
-		const params = item.params.map((param) => param.name);
-
-		for (const expression of item.body.body) {
-			if (hasPropsInitialState(expression, params)) {
-				const propsInitialState = {
-					lineStart: expression.loc.start.line,
-					lineEnd: expression.loc.end.line,
-					line: readFiles.get_lines(component.file_url, propsInitialState.lineStart, propsInitialState.lineEnd),
-				};
-
-				component.propsInitialState.push(propsInitialState);
-			}
-		}
-	} else if (item.key.name !== 'render') {
+	if (item.key.name !== 'render') {
 		component.classMethods.push(item.key.name);
 	}
 }
@@ -175,7 +213,7 @@ function updateProcessProperty(item, component, name) {
 	}
 }
 
-function recursiveSearch(item, result, component) {
+function recursiveSearch(item, result, component, parents = []) {
 	if (!item) {
 		return;
 	}
@@ -184,7 +222,7 @@ function recursiveSearch(item, result, component) {
 		if (!value) {
 			continue;
 		} else if (key === 'type') {
-			if ((value === 'ClassDeclaration' || value === 'FunctionDeclaration') && item.id && item.id.name[0] === item.id.name[0].toUpperCase()) {
+			if ((value === 'ClassDeclaration' || value === 'FunctionDeclaration') && item?.id?.name[0] === item?.id?.name[0].toUpperCase()) {
 				updateComponentData(item, component)
 				result.components.push(component);
 			} else if (value === 'VariableDeclaration' && item.declarations[0].init && item.declarations[0].init.type === 'ArrowFunctionExpression' && item.declarations[0].id.name[0] === item.declarations[0].id.name[0].toUpperCase()) {
@@ -197,6 +235,7 @@ function recursiveSearch(item, result, component) {
 			} else if (value === 'ClassProperty') {
 				updateClassPropertyData(item, component);
 			} else if (value === 'ClassMethod') {
+				updateComponentPropInInitialState(item, component, parents)
 				updateClassMethodData(item, component);
 			} else if (value === 'ObjectProperty') {
 				updateObjectPropertyData(item, component);
@@ -205,9 +244,11 @@ function recursiveSearch(item, result, component) {
 			} else if (value === 'ImportSpecifier' || value === 'ImportDefaultSpecifier') {
 				updateImportData(item, result);
 			} else if(value === "MemberExpression") {
-				updateComponentPropInInitialState(item, component)
+				updateComponentPropInInitialState(item, component, parents)
 			} else if(value === "CallExpression"){
-				updateComponentPropInInitialState(item, component)
+				updateComponentPropInInitialState(item, component, parents)
+			} else if(value === "ConditionalExpression"){
+				updateComponentPropInInitialState(item, component, parents)
 			}
 		} else if (key === 'property' && !component.properties.includes(value.name)) {
 			updateProcessProperty(item, component, value.name);
@@ -216,7 +257,7 @@ function recursiveSearch(item, result, component) {
 		} else if (key === 'name' && value.name === 'input') {
 			updateInputData(item, component);
 		} else if (typeof value === 'object') {
-			recursiveSearch(value, result, component);
+			recursiveSearch(value, result, component, [...parents.slice(-1), item]);
 		}
 	}
 }
