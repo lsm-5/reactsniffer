@@ -128,7 +128,6 @@ function updateFunctionData(item, result, component) {
 	}
 }
 
-
 function updateClassMethodData(item, component) {
 	if (item.key.name !== 'render') {
 		component.classMethods.push(item.key.name);
@@ -213,6 +212,101 @@ function updateProcessProperty(item, component, name) {
 	}
 }
 
+function checkAttributesJSXArrayIndexKey(attributes, indexName, component){
+	attributes.forEach(attribute => {
+		if(attribute?.type === "JSXAttribute" && attribute?.name?.name === "key" && attribute.value.expression.name === indexName){
+			const string = readFiles.getStringBetweenIndexes(component.file_url, attribute.value.expression.loc.start.index, attribute.value.expression.loc.end.index-1)
+
+			const arrayIndexKey = {
+				lineStart: attribute.value.expression.loc.start.line,
+				lineEnd: attribute.value.expression.loc.end.line,
+				line: readFiles.get_lines(component.file_url, attribute.value.expression.loc.start.line, attribute.value.expression.loc.end.line),
+				smellString: string,
+			};
+
+			component.arrayIndexKey.push(arrayIndexKey);
+		} else if(attribute?.type === "JSXAttribute" && attribute?.name?.name === "key" && attribute?.value?.expression?.type === "TemplateLiteral"){
+			attribute?.value?.expression?.expressions.forEach(currentItem => {
+				if(currentItem.name === indexName){
+					const string = readFiles.getStringBetweenIndexes(component.file_url, currentItem.start, attribute.end-1)
+
+					const arrayIndexKey = {
+						lineStart: currentItem.loc.start.line,
+						lineEnd: currentItem.loc.end.line,
+						line: readFiles.get_lines(component.file_url, currentItem.loc.start.line, currentItem.loc.end.line),
+						smellString: string,
+					};
+
+					component.arrayIndexKey.push(arrayIndexKey);
+				}
+			})
+		}
+	})
+}
+
+function checkPropertiesArrayIndexKey(properties, indexName, component){
+	properties.forEach(propertie => {
+		if(propertie?.type === "ObjectProperty" && propertie?.key?.name === "key" && propertie?.value?.name === indexName){
+			const string = readFiles.getStringBetweenIndexes(component.file_url, propertie.value.start, propertie.value.end-1)
+
+			const arrayIndexKey = {
+				lineStart: propertie.value.loc.start.line,
+				lineEnd: propertie.value.loc.end.line,
+				line: readFiles.get_lines(component.file_url, propertie.value.loc.start.line, propertie.value.loc.end.line),
+				smellString: string,
+			};
+
+			component.arrayIndexKey.push(arrayIndexKey);
+		}
+	})
+}
+
+function updateComponentArrayIndexKey(item, component, parents) {
+	const typeArray = item?.callee?.property?.name;
+	item?.arguments?.forEach(argument => {
+		if (argument?.type === "ArrowFunctionExpression" && argument?.params.length > 1){
+			let indexName = undefined;
+			if (typeArray === "reduce" || typeArray === "reduceRight"){
+				indexName = argument?.params[2]?.name
+			} else if (typeArray=="find" || typeArray=="map" || typeArray=="flatMap" || typeArray=="filter" || typeArray=="some" || typeArray=="every" || typeArray=="findIndex" ) {
+				indexName = argument?.params[1]?.name
+			}
+
+			if(indexName === undefined){
+				return
+			}
+
+			if(argument?.body?.type === "JSXElement"){
+				checkAttributesJSXArrayIndexKey(argument?.body?.openingElement?.attributes, indexName, component)
+			} else if(argument?.body?.type === "CallExpression"){
+				argument?.body?.arguments.forEach(currentItem => {
+					if(currentItem?.type === "JSXElement"){
+						checkAttributesJSXArrayIndexKey(currentItem?.openingElement?.attributes, indexName, component)
+					} else if(currentItem?.type === "ObjectExpression"){
+						checkPropertiesArrayIndexKey(currentItem?.properties, indexName, component)
+					}
+				})
+			} else if(argument?.body?.type === "BlockStatement"){
+				argument?.body?.body?.forEach(currentItem => {
+					if(currentItem?.type === "ReturnStatement" && currentItem?.argument?.type === "CallExpression"){
+						currentItem?.argument?.arguments?.forEach(argumentItem => {
+							if(argumentItem?.type === "ObjectExpression"){
+								checkPropertiesArrayIndexKey(argumentItem?.properties, indexName, component)
+							}
+						})
+					} else if(currentItem?.type === "ExpressionStatement" && currentItem?.expression?.type === "CallExpression"){
+						currentItem?.expression?.arguments.forEach(currentArgument => {
+							if(currentArgument?.type === "JSXElement"){
+								checkAttributesJSXArrayIndexKey(currentArgument?.openingElement?.attributes, indexName, component)
+							}
+						})
+					}
+				})
+			}
+		}
+	})
+}
+
 function recursiveSearch(item, result, component, parents = []) {
 	if (!item) {
 		return;
@@ -247,6 +341,7 @@ function recursiveSearch(item, result, component, parents = []) {
 				updateComponentPropInInitialState(item, component, parents)
 			} else if(value === "CallExpression"){
 				updateComponentPropInInitialState(item, component, parents)
+				updateComponentArrayIndexKey(item, component, parents)
 			} else if(value === "ConditionalExpression"){
 				updateComponentPropInInitialState(item, component, parents)
 			}
@@ -287,6 +382,7 @@ function processAST(ast) {
 			name: 'no-name',
 			char: 0,
 			loc: 0,
+			arrayIndexKey: [],
 		}
 
 		recursiveSearch(value, result, component);

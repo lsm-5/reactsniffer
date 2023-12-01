@@ -95,6 +95,7 @@ function detectSmellsRnReact(path) {
       JSX: "N", // JSX outside the render method
       UC: 0, // Uncontrolled Components
       PIS: 0, // Props in Initial State
+      AIK: 0, // Array Index Key
     };
 
     // checagem 1
@@ -153,6 +154,12 @@ function detectSmellsRnReact(path) {
       hasSmells = true;
       outComponent.PIS = component.propsInitialState.length;
       smells['Props in Initial State'] += component.propsInitialState.length
+    }
+
+    if (component.arrayIndexKey.length > 0){
+      hasSmells = true;
+      outComponent.AIK = component.arrayIndexKey.length;
+      smells['Use of index as key in rendering with loops'] += component.arrayIndexKey.length
     }
 
     if (hasSmells) {
