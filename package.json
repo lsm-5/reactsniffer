@@ -8,7 +8,7 @@
     "reactsniffer": "index.js"
   },
   "scripts": {
-    "start": "node ./src/runSmells.js src/tests/propInInitialState/invalid/case#1",
+    "start": "node ./src/runSmells.js src/tests/PropInInitialState/invalid/case#1",
     "test": "jest"
   },
   "repository": {

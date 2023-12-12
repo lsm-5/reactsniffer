@@ -102,7 +102,7 @@ function updateComponentPropInInitialState(item, component, parents) {
 
 function updateComponentData(item, component) {
 	component.type = item.type
-	component.name =item.id ? item.id.name : 'no-name'
+	component.name = item.id ? item.id.name : 'no-name'
 	component.char = item.end - item.start + 1
 	component.loc = item.loc.end.line - item.loc.start.line + 1
 
@@ -129,9 +129,7 @@ function updateFunctionData(item, result, component) {
 }
 
 function updateClassMethodData(item, component) {
-	if (item.key.name !== 'render') {
-		component.classMethods.push(item.key.name);
-	}
+	component.classMethods.push(item.key.name);
 }
 
 function updateObjectPropertyData(item, component) {
@@ -140,8 +138,22 @@ function updateObjectPropertyData(item, component) {
 	}
 }
 
-function updateJSXElementData(component) {
-	component.JSXOutsideRender = component.classMethods;
+function updateJSXElementData(item, component, parents, result) {
+	if (component.classMethods.length > 0 ){
+		component.JSXOutsideRender = component.classMethods.filter(item => item !== "render");
+	} else {
+		for (let i = parents.length - 1; i >= 0; i--) {
+			if(parents[i]?.type === "VariableDeclarator" || parents[i]?.type === "FunctionDeclaration"){
+				if(parents[i]?.id?.name !== component.name){
+					const indexFather = result.components.findIndex(itemCurrent => itemCurrent.name === parents[i]?.id?.name)
+					if (!result.components[indexFather].JSXOutsideRender.includes(component.name)){
+						result.components[indexFather] = {...result.components[indexFather], JSXOutsideRender: [...result.components[indexFather].JSXOutsideRender, component.name]}
+					}
+				}
+			}
+		}
+	}
+
 }
 
 function updateImportData(item, result) {
@@ -307,7 +319,7 @@ function updateComponentArrayIndexKey(item, component, parents) {
 	})
 }
 
-function recursiveSearch(item, result, component, parents = []) {
+function recursiveSearch(item, result, component, parents) {
 	if (!item) {
 		return;
 	}
@@ -316,14 +328,51 @@ function recursiveSearch(item, result, component, parents = []) {
 		if (!value) {
 			continue;
 		} else if (key === 'type') {
+			// atualiza quem é o component atual
+			if (result.components.length > 0 && component?.name !== undefined){
+				for (let i = parents.length - 1; i >= 0; i--) {
+					if((parents[i].type === 'ClassDeclaration' || parents[i].type === 'FunctionDeclaration') && parents[i]?.id?.name[0] === parents[i]?.id?.name[0].toUpperCase()){
+						if(component.name === parents[i].id ? parents[i].id.name : 'no-name'){
+							break
+						}else{
+							const currentComponent = result.components.find(component => component?.name === parents[i].id ? parents[i].id.name : 'no-name')
+							if (currentComponent){
+								component = currentComponent
+								break
+							}else{
+								break
+							}
+						}
+					} else if (parents[i]?.type === 'VariableDeclaration' && parents[i]?.declarations[0]?.init?.type === 'ArrowFunctionExpression' && parents[i]?.declarations[0]?.id?.name[0] === parents[i]?.declarations[0]?.id?.name[0].toUpperCase()){
+						if(component.name === parents[i].declarations[0].id.name){
+							break
+						}else{
+							const currentComponent = result.components.find(component => component?.name === parents[i]?.declarations[0]?.id?.name)
+							if (currentComponent){
+								component = currentComponent
+								break
+							}else{
+								break
+							}
+						}
+					}
+				}
+			}
+
 			if ((value === 'ClassDeclaration' || value === 'FunctionDeclaration') && item?.id?.name[0] === item?.id?.name[0].toUpperCase()) {
-				updateComponentData(item, component)
-				result.components.push(component);
-			} else if (value === 'VariableDeclaration' && item.declarations[0].init && item.declarations[0].init.type === 'ArrowFunctionExpression' && item.declarations[0].id.name[0] === item.declarations[0].id.name[0].toUpperCase()) {
+				const newComponent = {...component}
+				updateComponentData(item, newComponent)
+				result.components.push(newComponent);
+				component = newComponent
+				parents = [...parents, item]
+			} else if (value === 'VariableDeclaration' && item?.declarations[0]?.init?.type === 'ArrowFunctionExpression' && item.declarations[0].id.name[0] === item.declarations[0].id.name[0].toUpperCase()) {
 				const arrowFunction = item.declarations[0].init;
-				updateComponentData(arrowFunction, component);
-				component.name = item.declarations[0].id.name; // Adição da linha para atribuir o nome do componente
-				result.components.push(component);
+				const newComponent = {...component}
+				updateComponentData(arrowFunction, newComponent);
+				newComponent.name = item.declarations[0].id.name; // Adição da linha para atribuir o nome do componente
+				result.components.push(newComponent);
+				component = newComponent
+				parents = [...parents, item]
 			} else if (value === 'FunctionDeclaration' || (value === 'VariableDeclaration' && item.declarations[0].init && item.declarations[0].init.type === 'ArrowFunctionExpression')) {
 				updateFunctionData(item, result, component);
 			} else if (value === 'ClassProperty') {
@@ -334,7 +383,7 @@ function recursiveSearch(item, result, component, parents = []) {
 			} else if (value === 'ObjectProperty') {
 				updateObjectPropertyData(item, component);
 			} else if (value === 'JSXElement') {
-				updateJSXElementData(component);
+				updateJSXElementData(item, component, parents, result);
 			} else if (value === 'ImportSpecifier' || value === 'ImportDefaultSpecifier') {
 				updateImportData(item, result);
 			} else if(value === "MemberExpression") {
@@ -352,7 +401,7 @@ function recursiveSearch(item, result, component, parents = []) {
 		} else if (key === 'name' && value.name === 'input') {
 			updateInputData(item, component);
 		} else if (typeof value === 'object') {
-			recursiveSearch(value, result, component, [...parents.slice(-1), item]);
+			recursiveSearch(value, result, component, [...parents, {keyParent: key, ...value}]);
 		}
 	}
 }
@@ -385,7 +434,7 @@ function processAST(ast) {
 			arrayIndexKey: [],
 		}
 
-		recursiveSearch(value, result, component);
+		recursiveSearch(value, result, component, [{keyParent: "Program", ...ast.program}]);
 	}
 
 	return result;

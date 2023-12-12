@@ -138,9 +138,10 @@ function detectSmellsRnReact(path) {
 
     // checagem 6
     outComponent.JSX = component.JSXOutsideRender.length;
-    if (outComponent.JSX > thresholds.NM_JSX) {
+    if (outComponent.JSX > 0) {
       hasSmells = true;
       outComponent.JSX = "Y";
+      smells['Component Nesting/JSX Outside the Render'] += component.JSXOutsideRender.length
     }
 
     // checagem 7
