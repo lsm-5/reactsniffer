@@ -19,20 +19,13 @@ function detectSmellsRnReact(path) {
     "Direct DOM Manipulation": 0,
     "Props Spreading": 0,
     "Deep Indentation": 0,
-    "async functions in useEffect / async useEffect": 0,
     "Too many props": 0,
-    "Duplicated Component / Repetitive Logic": 0,
-    "Dont use setState in componentWillUpdate": 0,
-    "Multiple booleans for state": 0,
     "Large useEffect": 0,
     "Mutable Variables": 0,
     "Procedural Patterns": 0,
     "String Literals": 0,
-    "Declaring defaultProps for all props": 0,
-    "Too many files": 0,
     "Never Using Class Components": 0,
     "Use PrevState": 0,
-    bind: 0,
   };
 
   let allFiles = [];
@@ -96,20 +89,27 @@ function detectSmellsRnReact(path) {
       UC: 0, // Uncontrolled Components
       PIS: 0, // Props in Initial State
       AIK: 0, // Array Index Key
+      PD: 0, // Prop Drilling
+      TMU: "N", // Too many useState
+      PS: 0, // Props Spreading
+      DI: 0, // Deep Indentation
+      P: 0, // Properties
+      LUE: 0, // Large UseEffect
+      MV: 0, // Mutable Variables
+      PP: 0, // Procedural Patterns
+      SL: 0, // String Literals
+      CD: "N", // Class Declaration
+      PREVS: 0, // PrevState
     };
 
     // checagem 1
-    const classMethods =
-        component.classMethods.length + component.functions.length;
-
     if (
         component.loc > thresholds.LOC_Component ||
-        component.properties.length > thresholds.N_props ||
-        component.classProperties.length > thresholds.NA ||
-        classMethods > thresholds.NM
+        component.classMethods.length + component.functions.length > thresholds.NM
     ) {
       hasSmells = true;
       outComponent.LC = "Y";
+      smells['Large Components'] += 1
     }
 
     // checagem 2
@@ -134,6 +134,7 @@ function detectSmellsRnReact(path) {
     if (component.domManipulation.length > 0) {
       hasSmells = true;
       outComponent.DOM = component.domManipulation.length;
+      smells['Direct DOM Manipulation'] += component.domManipulation.length;
     }
 
     // checagem 6
@@ -157,10 +158,88 @@ function detectSmellsRnReact(path) {
       smells['Props in Initial State'] += component.propsInitialState.length
     }
 
+    // checagem 9
+    if (component.propDrilling.length > 0) {
+      hasSmells = true;
+      outComponent.PD = component.propDrilling.length;
+      smells['Prop Drilling'] += component.propDrilling.length
+    }
+
+    // checagem 10
     if (component.arrayIndexKey.length > 0){
       hasSmells = true;
       outComponent.AIK = component.arrayIndexKey.length;
       smells['Use of index as key in rendering with loops'] += component.arrayIndexKey.length
+    }
+
+    // checagem 11
+    if(component.useState.length > thresholds['N_useState']){
+      hasSmells = true
+      outComponent.TMU = "Y";
+      smells['Too many useState'] += 1;
+    }
+
+    // checagem 12
+    if(component.propsSpreading.length > 0){
+      hasSmells = true
+      outComponent.PS = component.propsSpreading.length
+      smells['Props Spreading'] += component.propsSpreading.length
+    }
+
+    // checagem 13
+    if(component.deepIndentation.length > 0){
+      hasSmells = true
+      outComponent.DI = component.deepIndentation.length
+      smells['Deep Indentation'] += component.deepIndentation.length
+    }
+
+    // checagem 14
+    if(component.properties.length > thresholds.N_props){
+      hasSmells = true
+      outComponent.P = component.properties.length
+      smells['Too many props'] += 1
+    }
+
+    // checagem 15
+    if(component.largeUseEffect.length > 0){
+      hasSmells = true
+      outComponent.LUE = component.largeUseEffect.length
+      smells['Large useEffect'] += component.largeUseEffect.length
+    }
+
+    // checagem 16
+    if(component.mutableVariables.length > 0){
+      hasSmells = true
+      outComponent.MV = component.mutableVariables.length
+      smells['Mutable Variables'] += component.mutableVariables.length
+    }
+
+    // checagem 17
+    if(component.proceduralPatterns.length > 0){
+      hasSmells = true
+      outComponent.PP = component.proceduralPatterns.length
+      smells['Procedural Patterns'] += component.proceduralPatterns.length
+    }
+
+    // checagem 18
+    if(component.stringLiterals.length > 0){
+      hasSmells = true
+      outComponent.SL = component.stringLiterals.length
+      smells['String Literals'] += component.stringLiterals.length
+    }
+
+    // checagem 19
+    if(component.type === "ClassDeclaration"){
+      hasSmells = true
+      outComponent.CD = "Y"
+      smells['Never Using Class Components'] += 1
+    }
+
+    // checagem 20
+    if(component.prevState.length > 0){
+      hasSmells = true
+      outComponent.PREVS = component.prevState.length
+      smells['Use PrevState'] += component.prevState.length
     }
 
     if (hasSmells) {

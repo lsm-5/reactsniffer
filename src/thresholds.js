@@ -81,7 +81,6 @@ exports.compute = function(all_components,all_files) {
 }
 
 exports.get_empirical_thresholds = function() {
-
 	thresholds = {}
 
 	//Components thresholds
@@ -89,13 +88,12 @@ exports.get_empirical_thresholds = function() {
 	thresholds['N_props'] = 13;
 	thresholds['NM'] = 4;
 	thresholds['NM_JSX'] = 3;
-	// thresholds['NA'] = 1;
+	thresholds['N_useState'] = 9;
+	thresholds['N_useEffect'] = 19;
 
 	//Files thresholds
 	thresholds['LOC_File'] = 218;
 	thresholds['N_Components'] = 2;
-	// thresholds['N_Functions'] = 1;
 	thresholds['N_Imports'] = 20;
-
 	return thresholds;
 }
