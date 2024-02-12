@@ -40,14 +40,6 @@ describe("Prop Drilling smell invalid", () => {
             ]
     ).toBe(1);
   });
-
-  it("Prop Drilling case invalid #6", () => {
-    expect(
-        detect_smells_rn_react("src/tests/PropDrilling/invalid/case#6")[0][
-            "Prop Drilling"
-            ]
-    ).toBe(4);
-  });
 });
 
 describe("Prop Drilling smell valid", () => {

@@ -4,8 +4,9 @@ const readFiles = require('./utils/read_files');
 const {get_empirical_thresholds} = require("./thresholds");
 
 function updateComponent(addObject, componentCurrent, attrName, result){
-	const newComponent = {...componentCurrent, [attrName]: [...componentCurrent[attrName], addObject]}
-	const indexItem = result.components.findIndex(currentComponent => currentComponent.name === newComponent.name)
+	// const newComponent = {...componentCurrent, [attrName]: [...componentCurrent[attrName], addObject]}
+	const indexItem = result.components.findIndex(currentComponent => currentComponent.name === componentCurrent.name)
+	const newComponent = {...result.components[indexItem], [attrName]: [...componentCurrent[attrName], addObject]}
 	if(indexItem >= 0){
 		result.components[indexItem] = newComponent;
 	}
@@ -119,9 +120,14 @@ function checkClassMethodData(item, component, result) {
 	}
 }
 
-function checkObjectPropertyData(item, component, result) {
+function checkObjectPropertyData(item, component, result, parents) {
 	if ('name' in item.key && !component.properties.includes(item.key.name)) {
-		updateComponent(item.key.name, component, "properties", result)
+		const sliceParents = parents.slice(-6)
+		sliceParents.forEach(current => {
+			if(current.type === "FunctionDeclaration" || current.type === "VariableDeclarator"){
+				updateComponent(item.key.name, component, "properties", result)
+			}
+		})
 	}
 }
 
@@ -148,7 +154,9 @@ function checkJSXElementData(item, component, parents, result) {
 }
 
 function updateImportData(item, result) {
-	result.imports.push(item.local.name);
+	item.specifiers.forEach(current => {
+		result.imports.push({"item": current.local.name, "local": item.source.value});
+	})
 }
 
 function checkCalleeData(value, component, result) {
@@ -304,42 +312,45 @@ function checkArrayIndexKey(item, component, result) {
 
 function checkPropDrilling(item, component, parents, result){
 	const openingElement = parents.reverse().find(parentItem => parentItem?.keyParent === "openingElement")
-	if(openingElement?.name?.name?.charAt(0) === openingElement?.name?.name?.charAt(0).toUpperCase() && item?.value?.type === "JSXExpressionContainer"){
-		if(item?.value?.expression?.type === "Identifier"){
-			if(component.properties.includes(item.value.expression.name)){
-				const string = readFiles.getStringBetweenIndexes(component.file_url, item.value.expression.start, item.value.expression.end-1)
-				const propDrilling = {
-					lineStart: item.value.expression.loc.start.line,
-					lineEnd:item.value.expression.loc.end.line,
-					line: readFiles.get_lines(component.file_url,  item.value.expression.loc.start.line, item.value.expression.loc.end.line),
-					smellString: string,
-				}
+	if(openingElement?.name?.name !== undefined && openingElement?.name?.name?.charAt(0) === openingElement?.name?.name?.charAt(0).toUpperCase() && item?.value?.type === "JSXExpressionContainer"){
+		const originImport = result.imports.find(current => current.item === openingElement.name.name)
+		if(originImport !== undefined && originImport.local.includes("./")){
+			if(item?.value?.expression?.type === "Identifier"){
+				if(component.properties.includes(item.value.expression.name)){
+					const string = readFiles.getStringBetweenIndexes(component.file_url, item.value.expression.start, item.value.expression.end-1)
+					const propDrilling = {
+						lineStart: item.value.expression.loc.start.line,
+						lineEnd:item.value.expression.loc.end.line,
+						line: readFiles.get_lines(component.file_url,  item.value.expression.loc.start.line, item.value.expression.loc.end.line),
+						smellString: string,
+					}
 
-				updateComponent(propDrilling, component, "propDrilling", result)
-			}
-		} else if(item?.value?.expression?.type === "ObjectExpression"){
-			if(component.properties.includes(item.value.expression.properties[0]?.argument?.name)){
-				const string = readFiles.getStringBetweenIndexes(component.file_url, item.value.expression.start, item.value.expression.end-1)
-				const propDrilling = {
-					lineStart: item.value.expression.loc.start.line,
-					lineEnd:item.value.expression.loc.end.line,
-					line: readFiles.get_lines(component.file_url,  item.value.expression.loc.start.line, item.value.expression.loc.end.line),
-					smellString: string,
+					updateComponent(propDrilling, component, "propDrilling", result)
 				}
+			} else if(item?.value?.expression?.type === "ObjectExpression"){
+				if(component.properties.includes(item.value.expression.properties[0]?.argument?.name)){
+					const string = readFiles.getStringBetweenIndexes(component.file_url, item.value.expression.start, item.value.expression.end-1)
+					const propDrilling = {
+						lineStart: item.value.expression.loc.start.line,
+						lineEnd:item.value.expression.loc.end.line,
+						line: readFiles.get_lines(component.file_url,  item.value.expression.loc.start.line, item.value.expression.loc.end.line),
+						smellString: string,
+					}
 
-				updateComponent(propDrilling, component, "propDrilling", result)
+					updateComponent(propDrilling, component, "propDrilling", result)
 
-			}
-		} else if(item?.value?.expression?.type === "ConditionalExpression"){
-			if(component.properties.includes(item.value.expression.consequent.name) || component.properties.includes(item.value.expression.alternate.name)){
-				const string = readFiles.getStringBetweenIndexes(component.file_url, item.value.expression.start, item.value.expression.end-1)
-				const propDrilling = {
-					lineStart: item.value.expression.loc.start.line,
-					lineEnd:item.value.expression.loc.end.line,
-					line: readFiles.get_lines(component.file_url,  item.value.expression.loc.start.line, item.value.expression.loc.end.line),
-					smellString: string,
 				}
-				updateComponent(propDrilling, component, "propDrilling", result)
+			} else if(item?.value?.expression?.type === "ConditionalExpression"){
+				if(component.properties.includes(item.value.expression.consequent.name) || component.properties.includes(item.value.expression.alternate.name)){
+					const string = readFiles.getStringBetweenIndexes(component.file_url, item.value.expression.start, item.value.expression.end-1)
+					const propDrilling = {
+						lineStart: item.value.expression.loc.start.line,
+						lineEnd:item.value.expression.loc.end.line,
+						line: readFiles.get_lines(component.file_url,  item.value.expression.loc.start.line, item.value.expression.loc.end.line),
+						smellString: string,
+					}
+					updateComponent(propDrilling, component, "propDrilling", result)
+				}
 			}
 		}
 	}
@@ -509,8 +520,6 @@ function checkPrevState(item, component, result){
 	}
 }
 
-
-
 function identifierCurrentComponent(component, result, parents){
 	// atualiza quem é o component atual
 	if (result.components.length > 0 && component?.name !== undefined) {
@@ -577,18 +586,18 @@ function recursiveSearch(item, result, component, parents) {
 				checkPropInInitialState(item, component, parents, result)
 				checkClassMethodData(item, component, result);
 			} else if (value === 'ObjectProperty') {
-				checkObjectPropertyData(item, component, result);
+				checkObjectPropertyData(item, component, result, parents);
 			} else if (value === 'JSXElement') {
 				checkJSXElementData(item, component, parents, result);
-			} else if (value === 'ImportSpecifier' || value === 'ImportDefaultSpecifier') {
+			} else if (value === "ImportDeclaration"){
 				updateImportData(item, result);
 			} else if(value === "MemberExpression") {
 				checkPropInInitialState(item, component, parents, result)
 			} else if(value === "CallExpression"){
 				checkPropInInitialState(item, component, parents, result)
 				checkArrayIndexKey(item, component, result)
-				checkLargeUseEffect(item, component, result)
 				checkPrevState(item, component, result)
+				checkLargeUseEffect(item, component, result)
 			} else if(value === "ConditionalExpression"){
 				checkPropInInitialState(item, component, parents, result)
 				checkDeepIndentation(item, component, result)

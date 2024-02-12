@@ -40,7 +40,8 @@ module.exports = function (dirname) {
           ast["url"] = filepath;
           ast["number_of_lines"] =
               ast["loc"]["end"]["line"] - ast["loc"]["start"]["line"] + 1;
-        } else if(body?.type === "CallExpression"){
+        }
+        else if(body?.type === "CallExpression"){
           for(argument in body.arguments){
             if(argument.value === "react" || argument.value === "react-native"){
               ast["url"] = filepath;

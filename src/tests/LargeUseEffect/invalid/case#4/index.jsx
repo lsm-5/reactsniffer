@@ -23,6 +23,26 @@ const ReactNativeComponentWithEffect = () => {
         console.log('Efeito 18');
         console.log('Efeito 19');
         console.log('Efeito 20');
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
     }, []);
 
     return (

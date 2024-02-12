@@ -6,7 +6,7 @@ const computeThresholds = require("./thresholds");
 
 function detectSmellsRnReact(path) {
   if (!path.startsWith("/")) path = process.cwd() + "/" + path;
-
+  //path = "C:/Users/lucas/Desktop/Repo Neurobots/Web Monitore/nb_webterapia/src/"
   const astReactFiles = filterReactFiles(path);
 
   const smells = {

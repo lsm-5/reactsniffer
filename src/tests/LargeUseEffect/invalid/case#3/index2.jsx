@@ -20,6 +20,26 @@ const ComponentWithEffect = () => {
         console.log('Efeito 16');
         console.log('Efeito 17');
         console.log('Efeito 18');
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
+        console.log("fim do use effect")
         console.log('Efeito 19');
         console.log('Efeito 20');
     }, []);

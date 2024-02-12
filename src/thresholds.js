@@ -88,8 +88,8 @@ exports.get_empirical_thresholds = function() {
 	thresholds['N_props'] = 13;
 	thresholds['NM'] = 4;
 	thresholds['NM_JSX'] = 3;
-	thresholds['N_useState'] = 9;
-	thresholds['N_useEffect'] = 19;
+	thresholds['N_useState'] = 20;
+	thresholds['N_useEffect'] = 30;
 
 	//Files thresholds
 	thresholds['LOC_File'] = 218;

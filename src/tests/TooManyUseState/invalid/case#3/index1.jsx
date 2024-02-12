@@ -11,7 +11,17 @@ const MeuComponente = () => {
     const [estado8, setEstado8] = useState(new Date());
     const [estado9, setEstado9] = useState(10);
     const [estado10, setEstado10] = useState(undefined);
-
+    const [estado11, setEstado11] = useState('');
+    const [estado12, setEstado12] = useState(0);
+    const [estado13, setEstado13] = useState(false);
+    const [estado14, setEstado14] = useState([]);
+    const [estado15, setEstado15] = useState({});
+    const [estado16, setEstado16] = useState(null);
+    const [estado17, setEstado17] = useState('Texto Inicial');
+    const [estado18, setEstado18] = useState(new Date());
+    const [estado19, setEstado19] = useState(10);
+    const [estado20, setEstado20] = useState(undefined);
+    const [estado21, setEstado21] = useState(undefined);
     const modificarEstados = () => {
         setEstado1('Novo Valor para Estado 1');
         setEstado2((prevEstado2) => prevEstado2 + 1);
