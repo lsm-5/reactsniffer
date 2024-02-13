@@ -35,7 +35,7 @@ module.exports = function() {
 		'referrer',
 		'scripts',
 		'strictErrorChecking',
-		'title',
+		//'title',
 		'URL'
 	]
 }

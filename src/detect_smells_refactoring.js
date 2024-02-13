@@ -6,7 +6,8 @@ const {get_empirical_thresholds} = require("./thresholds");
 function updateComponent(addObject, componentCurrent, attrName, result){
 	// const newComponent = {...componentCurrent, [attrName]: [...componentCurrent[attrName], addObject]}
 	const indexItem = result.components.findIndex(currentComponent => currentComponent.name === componentCurrent.name)
-	const newComponent = {...result.components[indexItem], [attrName]: [...componentCurrent[attrName], addObject]}
+	let uniqueArr = [...new Set([...componentCurrent[attrName], addObject])];
+	const newComponent = {...result.components[indexItem], [attrName]: uniqueArr}
 	if(indexItem >= 0){
 		result.components[indexItem] = newComponent;
 	}
@@ -122,12 +123,25 @@ function checkClassMethodData(item, component, result) {
 
 function checkObjectPropertyData(item, component, result, parents) {
 	if ('name' in item.key && !component.properties.includes(item.key.name)) {
+		if(item.key.name === "tags"){
+			console.log("aqui")
+		}
 		const sliceParents = parents.slice(-6)
+		let permissionDeclaration = false;
+		let permissionObjectPattern = false;
 		sliceParents.forEach(current => {
-			if(current.type === "FunctionDeclaration" || current.type === "VariableDeclarator"){
-				updateComponent(item.key.name, component, "properties", result)
+			if((current.type === "FunctionDeclaration" && current.id.name === component.name) || (current.type === "VariableDeclarator" && current.id.name === component.name)){
+				permissionDeclaration = true
+			}
+
+			if(current.type === "ObjectPattern"){
+				permissionObjectPattern = true
 			}
 		})
+
+		if(permissionObjectPattern && permissionDeclaration){
+			updateComponent(item.key.name, component, "properties", result)
+		}
 	}
 }
 
@@ -565,14 +579,62 @@ function recursiveSearch(item, result, component, parents) {
 			identifierCurrentComponent(component, result, parents)
 
 			if ((value === 'ClassDeclaration' || value === 'FunctionDeclaration') && item?.id?.name[0] === item?.id?.name[0].toUpperCase()) {
-				const newComponent = {...component}
+				const newComponent = {...component,
+					properties : [],
+					forceUpdate : [],
+					uncontrolled : [],
+					classProperties : [],
+					classMethods : [],
+					JSXOutsideRender : [],
+					propsInitialState : [],
+					domManipulation : [],
+					functions: [],
+					superClass: 'no-name',
+					type: 'no-type',
+					name: 'no-name',
+					char: 0,
+					loc: 0,
+					arrayIndexKey: [],
+					propDrilling: [],
+					useState: [],
+					propsSpreading: [],
+					deepIndentation: [],
+					mutableVariables: [],
+					proceduralPatterns: [],
+					stringLiterals: [],
+					largeUseEffect: [],
+					prevState: []}
 				updateComponentData(item, newComponent)
 				result.components.push(newComponent);
 				component = newComponent
 				parents = [...parents, item]
 			} else if (value === 'VariableDeclaration' && item?.declarations[0]?.init?.type === 'ArrowFunctionExpression' && item.declarations[0].id.name[0] === item.declarations[0].id.name[0].toUpperCase()) {
 				const arrowFunction = item.declarations[0].init;
-				const newComponent = {...component}
+				const newComponent = {...component,
+					properties : [],
+					forceUpdate : [],
+					uncontrolled : [],
+					classProperties : [],
+					classMethods : [],
+					JSXOutsideRender : [],
+					propsInitialState : [],
+					domManipulation : [],
+					functions: [],
+					superClass: 'no-name',
+					type: 'no-type',
+					name: 'no-name',
+					char: 0,
+					loc: 0,
+					arrayIndexKey: [],
+					propDrilling: [],
+					useState: [],
+					propsSpreading: [],
+					deepIndentation: [],
+					mutableVariables: [],
+					proceduralPatterns: [],
+					stringLiterals: [],
+					largeUseEffect: [],
+					prevState: []}
 				updateComponentData(arrowFunction, newComponent);
 				newComponent.name = item.declarations[0].id.name; // Adição da linha para atribuir o nome do componente
 				result.components.push(newComponent);
