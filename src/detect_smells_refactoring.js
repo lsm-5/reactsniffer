@@ -19,15 +19,13 @@ function checkPropInInitialState(item, component, parents, result) {
 		// type MemberExpression
 		const lines = readFiles.get_lines(component.file_url, item.object.loc.start.line, item.object.loc.end.line);
 
-		// checa se não tem uma tag na mesma linha
-		let checkIsJSX = false
+		let checkUseState = false
 		for (const item of parents.slice().reverse()) {
-			if(item.type === "MemberExpression") continue;
-			if(item.type === "JSXExpressionContainer") checkIsJSX=true;
-			//if(item.type === "ObjectProperty") checkIsJSX=true;
-			else break
+			if(item?.type === "Identifier" && item?.name === "useState"){
+				checkUseState = true
+			}
 		}
-		if(!checkIsJSX){
+		if(checkUseState){
 			const string = readFiles.getStringBetweenIndexes(component.file_url, item.start, item.end-1)
 			const propsInitialState = {
 				lineStart: item.object.loc.start.line,
@@ -127,7 +125,7 @@ function checkObjectPropertyData(item, component, result, parents) {
 		let permissionDeclaration = false;
 		let permissionObjectPattern = false;
 		sliceParents.forEach(current => {
-			if((current.type === "FunctionDeclaration" && current.id.name === component.name) || (current.type === "VariableDeclarator" && current.id.name === component.name)){
+			if((current?.type === "FunctionDeclaration" && current?.id?.name === component?.name) || (current.type === "VariableDeclarator" && current.id.name === component.name)){
 				permissionDeclaration = true
 			}
 
@@ -200,8 +198,8 @@ function checkInputData(item, component, result) {
 
 		if (hasRefAttribute && !hasValueAttribute) {
 			const uncontrolled = {
-				lineNumber: value.loc.start.line,
-				line: readFiles.get_line(component.file_url, value.loc.start.line),
+				lineNumber: item.loc.start.line,
+				line: readFiles.get_line(component.file_url, item.loc.start.line),
 			};
 
 			updateComponent(uncontrolled, component, 'uncontrolled', result)

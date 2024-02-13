@@ -5,7 +5,7 @@ module.exports = function() {
 		'getElementsByClassName',
 		'innerHTML',
 		'innerHTML',
-		'style',
+		//'style',
 		'setAttribute',
 		'createElement',
 		'removeChild',

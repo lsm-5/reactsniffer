@@ -248,8 +248,7 @@ function detectSmellsRnReact(path) {
 
   return [
     smells,
-    outputFiles,
-    outputComponents,
+    { outputFiles, outputComponents },
     { allComponents, allFiles },
   ];
 }
