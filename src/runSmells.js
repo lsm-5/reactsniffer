@@ -2,7 +2,7 @@ const detect_smells_rn_react = require("./resultSmellsRefactoring");
 // var path = process.argv.slice(2)[0];
 // if (!path.startsWith("/")) path = process.cwd() + "/" + path;
 
-var path = "C:/Users/lucas/Desktop/RepoPessoais/TCC/ant-design-mobile-master/src/"
+var path = "C:/Users/lucas/Desktop/RepoPessoais/TCC/react-native-paper-main/"
 
 const [smells, infoSmells, infoGeneral] = detect_smells_rn_react(path);
 

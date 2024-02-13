@@ -218,7 +218,7 @@ function checkClassPropertyData(item, component, result) {
 function checkProcessProperty(item, component, name, result) {
 	if (
 		(item.object && item.object.name && item.object.name === 'props') ||
-		(item.object.property && item.object.property.name && item.object.property.name === 'props')
+		(item.object?.property && item.object?.property?.name && item.object?.property?.name === 'props')
 	) {
 		updateComponent(name, component, 'properties', result)
 	}
@@ -436,7 +436,7 @@ function checkDeepIndentation(item, component, result){
 }
 
 function checkLargeUseEffect(item, component, result){
-	if(item?.callee?.type === 'Identifier' && item?.callee?.name === 'useEffect' && item.arguments[0].body.body.length > get_empirical_thresholds()['N_useEffect']){
+	if(item?.callee?.type === 'Identifier' && item?.callee?.name === 'useEffect' && item.arguments[0]?.body?.body?.length > get_empirical_thresholds()['N_useEffect']){
 		const string = readFiles.getStringBetweenIndexes(component.file_url, item.start, item.end-1)
 
 		const largeUseEffect = {
