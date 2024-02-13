@@ -5,8 +5,6 @@ const detectSmellsRefactoring = require("./detect_smells_refactoring");
 const computeThresholds = require("./thresholds");
 
 function detectSmellsRnReact(path) {
-  if (!path.startsWith("/")) path = process.cwd() + "/" + path;
-  path = "C:/Users/lucas/Desktop/Repo Neurobots/Web CDA/cda/src/"
   const astReactFiles = filterReactFiles(path);
 
   const smells = {

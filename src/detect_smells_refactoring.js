@@ -123,9 +123,6 @@ function checkClassMethodData(item, component, result) {
 
 function checkObjectPropertyData(item, component, result, parents) {
 	if ('name' in item.key && !component.properties.includes(item.key.name)) {
-		if(item.key.name === "tags"){
-			console.log("aqui")
-		}
 		const sliceParents = parents.slice(-6)
 		let permissionDeclaration = false;
 		let permissionObjectPattern = false;
@@ -157,7 +154,7 @@ function checkJSXElementData(item, component, parents, result) {
 			if(parents[i]?.type === "VariableDeclarator" || parents[i]?.type === "FunctionDeclaration"){
 				if(parents[i]?.id?.name !== component.name){
 					const indexFather = result.components.findIndex(itemCurrent => itemCurrent.name === parents[i]?.id?.name)
-					if (!result.components[indexFather].JSXOutsideRender.includes(component.name)){
+					if (result.components[indexFather]?.JSXOutsideRender !== undefined && !result.components[indexFather].JSXOutsideRender.includes(component.name)){
 						result.components[indexFather] = {...result.components[indexFather], JSXOutsideRender: [...result.components[indexFather].JSXOutsideRender, component.name]}
 					}
 				}

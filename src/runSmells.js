@@ -1,17 +1,21 @@
-const detect_smells_rn_react = require("./resultSmells");
-var dirname = process.argv.slice(2)[0];
+const detect_smells_rn_react = require("./resultSmellsRefactoring");
+// var path = process.argv.slice(2)[0];
+// if (!path.startsWith("/")) path = process.cwd() + "/" + path;
 
-const [smells, files, components, info] = detect_smells_rn_react(dirname);
+var path = "C:/Users/lucas/Desktop/Repo Neurobots/Web Painel Monitore/painel_admin/src/"
+
+const [smells, files, components, info] = detect_smells_rn_react(path);
 
 console.log(
   "\x1b[36m%s\x1b[0m",
   "Number of analyzed files:",
-  info.all_files.length
+  info.allFiles.length
 );
+
 console.log(
   "\x1b[36m%s\x1b[0m",
   "Number of analyzed components:",
-  info.all_components.length
+  info.allComponents.length
 );
 
 console.log("\n\x1b[1mSmells Found:\x1b[0m");
