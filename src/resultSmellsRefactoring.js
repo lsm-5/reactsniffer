@@ -70,6 +70,11 @@ function detectSmellsRnReact(path) {
 
   // insere todos os componentes com smell
   let contSmells = 0;
+  let resultTCC = 0;
+  let resultTCC2 = 0;
+  let resultTCC3 = 0;
+  let resultTCC4 = 0;
+  let resultTCC5 = 0;
   let number_of_smell_components = 0;
   for (const [key, component] of Object.entries(allComponents)) {
     let hasSmells = false;
@@ -105,6 +110,16 @@ function detectSmellsRnReact(path) {
         component.loc > thresholds.LOC_Component ||
         component.classMethods.length + component.functions.length > thresholds.NM
     ) {
+      /*if(component.loc >= resultTCC){
+        resultTCC = component.loc
+        console.log("componente LOC", resultTCC)
+      }
+
+      if(component.classMethods.length + component.functions.length > resultTCC2){
+        resultTCC2 = component.classMethods.length + component.functions.length
+        console.log("componente METHODS", resultTCC2)
+      }*/
+
       hasSmells = true;
       outComponent.LC = "Y";
       smells['Large Components'] += 1
@@ -112,6 +127,10 @@ function detectSmellsRnReact(path) {
 
     // checagem 2
     if (component.properties.length > thresholds.N_props) {
+      /*if(component.properties.length > resultTCC4){
+        resultTCC4 = component.properties.length
+        console.log("componente props", resultTCC4)
+      }*/
       hasSmells = true;
       outComponent.TP = "Y";
     }
@@ -138,6 +157,9 @@ function detectSmellsRnReact(path) {
     // checagem 6
     outComponent.JSX = component.JSXOutsideRender.length;
     if (outComponent.JSX > 0) {
+      if(component.JSXOutsideRender.length > resultTCC5){
+        resultTCC5 = component.JSXOutsideRender.length
+      }
       hasSmells = true;
       outComponent.JSX = "Y";
       smells['Component Nesting/JSX Outside the Render'] += component.JSXOutsideRender.length
@@ -172,6 +194,10 @@ function detectSmellsRnReact(path) {
 
     // checagem 11
     if(component.useState.length > thresholds['N_useState']){
+      /*if(component.useState.length >= resultTCC3){
+        resultTCC3 = component.useState.length
+        console.log("componente useState", resultTCC3)
+      }*/
       hasSmells = true
       outComponent.TMU = "Y";
       smells['Too many useState'] += 1;

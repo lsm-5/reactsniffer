@@ -64,7 +64,7 @@ function recursive_search(item,component,components,functions){
 
 	if (!item){
 		//return component
-		console.log("Null");
+		//console.log("Null");
 	}
 
 	for(var [key, value] of Object.entries(item)){
