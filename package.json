@@ -1,11 +1,11 @@
 {
-  "name": "reactsniffer",
-  "version": "1.0.18",
+  "name": "reactsniffer2",
+  "version": "1.0.0",
   "description": "Detect Code Smells in React-based Web Systems",
   "main": "index.js",
   "preferGlobal": true,
   "bin": {
-    "reactsniffer": "index.js"
+    "reactsniffer2": "index.js"
   },
   "scripts": {
     "start": "node ./src/runSmells.js src/tests/PropInInitialState/invalid/case#1",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fabiosferreira/reactsniffer.git"
+    "url": "git+https://github.com/lsm-5/reactsniffer2.git"
   },
   "keywords": [
     "JavaScript",
@@ -25,12 +25,12 @@
     "Software",
     "Design"
   ],
-  "author": "Fabio Ferreira",
+  "author": "Fabio Ferreira and Lucas Mendonça",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/fabiosferreira/reactsniffer/issues"
+    "url": "https://github.com/lsm-5/reactsniffer2/issues"
   },
-  "homepage": "https://github.com/fabiosferreira/reactsniffer#readme",
+  "homepage": "https://github.com/lsm-5/reactsniffer2#readme",
   "dependencies": {
     "@babel/parser": "^7.15.6",
     "csv-writer": "^1.6.0"
